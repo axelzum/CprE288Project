@@ -51,7 +51,7 @@ void move_backward(oi_t *sensor, int centimeters) {
 
     int sum = 0;
 
-    oi_setWheels(-400, -400);
+    oi_setWheels(-200, -200);
 
     while (sum > -1* centimeters * 10) {
         oi_update(sensor);
@@ -78,7 +78,7 @@ void turn_right(oi_t *sensor, double degrees) {
 
     degrees = degrees + 4;
 
-    oi_setWheels(-400, 400);
+    oi_setWheels(-200, 200);
 
     while (sum > -1 * degrees) {
         oi_update(sensor);
@@ -105,7 +105,7 @@ void turn_left(oi_t *sensor, double degrees) {
 
     degrees = degrees + 4;
 
-    oi_setWheels(400, -400);
+    oi_setWheels(200, -200);
 
     while (sum < degrees) {
         oi_update(sensor);
@@ -173,7 +173,7 @@ void userMovement(int direction, oi_t *sensor){
 //3 = frontleft
 //4 = frontright
 //5 = right
-int * move_forward_safely(oi_t *sensor, int centimeters){
+void move_forward_safely(oi_t *sensor, int centimeters, int *output){
     int sum = 0;
     oi_setWheels(200, 200);
     int bump = 0;
@@ -208,8 +208,12 @@ int * move_forward_safely(oi_t *sensor, int centimeters){
         //lcd_printf(hello);
     }
     oi_setWheels(0,0);
-    int arr[] = {bump, left, frontleft, frontright, right};
-    return arr;
+    output[0] = sensor -> bumpLeft;
+    output[1] = sensor -> bumpRight;
+    output[2] = left;
+    output[3] = frontleft;
+    output[4] = frontright;
+    output[5] = right;
 }
 
 

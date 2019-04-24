@@ -9,6 +9,7 @@
 #include "ping.h"
 #include "analysis.h"
 #include <math.h>
+#include "music.h"
 
 /**
  * @file main.c

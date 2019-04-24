@@ -17,6 +17,8 @@
 #include "open_interface.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "music.h"
+#include "ping.h"
 
 //volatile struct reading reading_array[180];
 
@@ -120,30 +122,32 @@ void moveWithWords(char *word){
         initialized++;
     }
     char first = word[0];
+    char second = word[1];
     char num[4] = {word[2],word[3],word[4],'\0'};
     int result = atoi(num);
 
-    if(first == 'f'){
-        int arr2[5] = move_forward_safely(sensor_data,  result);
+    if(first == 'f' & second == ' '){
+        int arr2[6];
+        move_forward_safely(sensor_data,  result, arr2);
         char toPrint[30];
-        sprintf(toPrint, "B:%d L:%d FL:%d FR:%d R:%d", arr2[0], arr2[1], arr2[2], arr2[4], arr2[5]);
+        sprintf(toPrint, "BL:%d BR:%d L:%d FL:%d FR:%d R:%d", arr2[0], arr2[1], arr2[2], arr2[3], arr2[4], arr2[5]);
         uart_sendString(toPrint);
         uart_sendChar('\r');
         uart_sendChar('\n');
     }
-    else if(first == 'b' ){
+    else if(first == 'b' & second == ' ' ){
         move_backward(sensor_data,  result);
         uart_sendString("Backward");
         uart_sendChar('\r');
         uart_sendChar('\n');
     }
-    else if(first == 'r' ){
+    else if(first == 'r' & second == ' '){
         turn_right(sensor_data,  result);
         uart_sendString("Right");
         uart_sendChar('\r');
         uart_sendChar('\n');
     }
-    else if(first == 'l' ){
+    else if(first == 'l' & second == ' '){
         turn_left(sensor_data,  result);
         uart_sendString("Left");
         uart_sendChar('\r');
@@ -153,6 +157,21 @@ void moveWithWords(char *word){
         struct reading reading_array[180];
         take_reading(reading_array);
     }
+    else if(strcmp(word, "oifree")==0){
+        oi_free(sensor_data);
+        initialized = 0;
+    }
+    else if(strcmp(word, "destFound")==0 ){
+        lcd_printf("Preparing to \napproach green");
+    }
+    else if(strcmp(word, "horses") == 0){
+        music_init1();
+        music_playSong(0);
+        timer_waitMillis(4500);
+        music_init2();
+        music_playSong(0);
+    }
+
 
 }
 
