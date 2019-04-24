@@ -1,148 +1,190 @@
-/*
-* @file uart.c
-*
-* @brief Contains the functions called by main enable and use uart communication
-*
-* @author Axel Zumwalt, Allan Juarez
-* @date 2/21/2019
-*/
+/**
+ * @file uart.c
+ * @brief Class to receive uart interrupts and handle them
+ * @author Adam Ford, Harrison Majerus
+ * @date 02/28/19
+ */
 
-#include "uart.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include "timer.h"
 #include "lcd.h"
+#include <inc/tm4c123gh6pm.h>
+#include "driverlib/interrupt.h"
+#include "uart.h"
+#include "movement.h"
+#include "open_interface.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-#define BIT0 0x01
-#define BIT1 0x02
-#define BIT2 0x04
-#define BIT3 0x08
-#define BIT4 0x10
-#define BIT5 0x20
-#define BIT6 0x40
-#define BIT7 0x80
-
-
-/**
-* Uart initilization functions. Enables rx and tx over UART1 and a uart interrupt.
-*
-* @author Axel Zumwalt, Allan Juarez
-*
-* @date 2/21/19
-*
-*/
-void uart_init(void) {
-
-    //Turn on clock for UART1 and Port B
-    SYSCTL_RCGCUART_R |= SYSCTL_RCGCUART_R1;
-    SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
-
-    //Enable alternate function for PB0, PB1
-    GPIO_PORTB_AFSEL_R |= (BIT1 | BIT0);
-    GPIO_PORTB_PCTL_R |= (BIT0 | BIT4);
-
-    GPIO_PORTB_DEN_R |= (BIT1 | BIT0); //Set pins0,1 digital mode
-    GPIO_PORTB_DIR_R &= ~BIT0; // Set pin 0 (Rx) to input(0)
-    GPIO_PORTB_DIR_R |= BIT1;  // Set pin 1 (Tx) to output(1)
-
-    //Disable UART0 device while we set it up
-    UART1_CTL_R &= ~UART_CTL_UARTEN;
-
-    // Set desired UART functionality
-    UART1_CTL_R = 0b001100000000;
-
-    //Set baud rate (115200 Baud)
-    UART1_IBRD_R = 8; //16,000,000 / (16 * 115200) = 8.44
-    UART1_FBRD_R = 44;
-    UART1_CC_R = 0; //Use system clock as UART clock source
-
-    //Set frame format: 1 start bit, 8databits, an odd parity bit, and 1 stop bit
-    UART1_LCRH_R = (UART1_LCRH_R |0b11110010) & 0xFFFFFFF2;
-
-    //Setup UART1 interrupts
-    UART1_ICR_R |= 0b00010000; // Clear RX interrupt status flag
-    UART1_IM_R  |= 0b00010000; // Enable RX interrupts
-
-    //Configure NVIC to allow UART interrupts
-    NVIC_PRI1_R |= 0x00020000;//Set UART1 pri to 1
-    NVIC_EN0_R  |= 0x00000040;//Enable UART1
-
-
-    IntRegister(INT_UART1, UART1_handler);
-
-    //Re-enable UART1
-    UART1_CTL_R = UART1_CTL_R | 0x01;
-    IntMasterEnable(); //Globally allows CPU to service interrupts
-}
+char arr[21]; //Used to hold current string
+int count = 0;  //Current index in char arr
+int initialized = 0; //0 if oi has not been initialized
+oi_t *sensor_data;  //Holds pointer to sensor data
 
 /**
-* Handeler for UART1 interrupt.
-*
-* @author Axel Zumwalt, Allan Juarez
-*
-* @date 2/21/19
-*
-*/
-void UART1_handler() {
-
-    //TODO there is a delay here.
-    //Part 3
-//   UART1_ICR_R |= 0b10000;
-//   char data = uart_receive();
-//   lcd_printf("%c", data);
-//   uart_sendChar(data);
-
-}
-
-/**
-* Sends a character over UART1
-*
-* @author Axel Zumwalt, Allan Juarez
-* @param
-*   data: Character to send.
-*
-* @date 2/21/19
-*
-*/
-void uart_sendChar(char data) {
-
-    while(UART1_FR_R & 0x20){
-
-    }
-    UART1_DR_R  = data;
-
-}
-
-/**
-* Sends a string over UART1
-*
-* @author Axel Zumwalt, Allan Juarez
-* @param
-*   data: Character array to send.
-*
+* Initializes the uart1
+* @author Harrison Majerus, Adam Ford
 * @date 2/28/19
-*
 */
-void uart_sendString(char data[]) {
+void uart_init(){
+    //enable UART1
+    SYSCTL_RCGCUART_R |= 0x02;
+    //Enable clock on port B
+    SYSCTL_RCGCGPIO_R |= 0x02;
+    //Enable ports 1 and 2
+    GPIO_PORTB_AFSEL_R |= 0x03;
+    //Set muxs of ctrl
+    GPIO_PORTB_PCTL_R |= 0x00000011;
+    //Digital Enable
+    GPIO_PORTB_DEN_R |= 0x03;
+    GPIO_PORTB_DIR_R |= 0x2;
+    GPIO_PORTB_DIR_R &= 0xFFFFFFFE;
+    //Disable UART1 so we can change stuff safely
+    UART1_CTL_R &= 0xFFFFFFFE;
+    //Baud Rate
+    UART1_IBRD_R = 0x8;
+    UART1_FBRD_R = 0x2C;
+    //Set Serial Parameters
+    UART1_LCRH_R = 0x60;
+    //Set clock to user systems
+    UART1_CC_R = 0;
+    //Enable it again
+    UART1_CTL_R |= 0x1;
+}
 
-    int i;
-    for(i = 0; i < strlen(data); i++) {
-        uart_sendChar(data[i]);
+/**
+* Sends char data to Putty
+* @author Harrison Majerus, Adam Ford
+* @param data Char to be sent
+* @date 2/28/19
+*/
+void uart_sendChar(char data)
+{
+    //wait until there is room to send data
+    while(UART1_FR_R & 0x20)
+    {
+    }
+    //send data
+    UART1_DR_R = data;
+}
+
+/**Blocking call to receive over UART1
+* returns char with data
+* @author Harrison Majerus, Adam Ford
+* @date 2/28/19
+*/
+char uart_receive(){
+    char data = 0;
+    //wait to receive
+    while(UART1_FR_R & UART_FR_RXFE)
+    {
+    }
+    //mask the 4 error bits and grab only 8 data bits
+    data = (char)(UART1_DR_R & 0xFF);
+    return data;
+}
+/**
+* Utilizes sendChar to print a full string of characters
+* @param String to be printed onto putty
+* @author: Adam Ford, Harrison Majerus
+* @date: 2/28/19
+**/
+void uart_sendString(char *str){
+    while(true){
+        if(*str == '\0'){
+            break;
+        }
+        uart_sendChar(*str);
+        str++;
+    }
+    uart_sendChar('\r');
+    uart_sendChar('\n');
+}
+
+/**
+* Moves the Roomba if a specific command has been entered
+* @author Harrison Majerus, Adam Ford
+* @param word Pointer to string of current words
+* @date 2/28/19
+*/
+void moveWithWords(char *word){
+
+    if(initialized == 0){
+        sensor_data = oi_alloc();
+        oi_init(sensor_data);
+        initialized++;
+    }
+    char first = word[0];
+    char num[4] = {word[2],word[3],word[4],'\0'};
+    int result = atoi(num);
+
+    if(first == 'f'){
+        int arr2[5] = move_forward_safely(sensor_data,  result);
+        char toPrint[30];
+        sprintf(toPrint, "B:%d L:%d FL:%d FR:%d R:%d", arr2[0], arr2[1], arr2[2], arr2[4], arr2[5]);
+        uart_sendString(toPrint);
+    }
+    else if(first == 'b' ){
+        move_backward(sensor_data,  result);
+        uart_sendString("Backward");
+    }
+    else if(first == 'r' ){
+        turn_right(sensor_data,  result);
+        uart_sendString("Right");
+    }
+    else if(first == 'l' ){
+        turn_left(sensor_data,  result);
+        uart_sendString("Left");
+    }
+
+}
+
+/**
+* Handles the UART interrupts
+* @author Harrison Majerus
+* @date 2/28/19
+*/
+void uart_handler(){
+    //clear interrupt status
+    UART1_ICR_R |= 0x00000010;
+    char charlie = uart_receive();
+    if(charlie == '\r'){
+        uart_sendChar('\r');
+        uart_sendChar('\n');
+
+        lcd_printf(arr);
+        moveWithWords(arr);
+        count=0;
+    }
+    else{
+    uart_sendChar(charlie);
+    arr[count] = charlie;
+    count++;
+    arr[count] = '\0';
+        if(count == 20){
+            uart_sendChar('\r');
+            uart_sendChar('\n');
+            lcd_printf(arr);
+            count=0;
+        }
     }
 }
 
 /**
-* Recieves a char over UART1 and returns it.
-*
-* @author Axel Zumwalt, Allan Juarez
-* @return Character recieved over UART1.
-*
-* @date 2/21/19
-*
+* Initializes the uart interrupts
+* @author Harrison Majerus, Adam Ford
+* @date 2/28/19
 */
-char uart_receive(void) {
-    char data =0;
+void uart_interrupt_init(){
+        // Unmask
+        UART1_ICR_R |= 0x00000010;
+        UART1_IM_R |= 0x00000010;
 
-  while(UART1_FR_R & UART_FR_RXFE){
+        // Enable interrupt for UART1
+        NVIC_PRI1_R |= 0x00020000;
+        NVIC_EN0_R |= 0x00000040;
 
-    }
-    data =(char)(UART1_DR_R & 0xFF);
-    return data;
+        // Bind the interrupt to the handler.
+        IntRegister(INT_UART1, uart_handler);
 }

@@ -24,9 +24,10 @@
 //TODO before demo calibrate servo, ir sensor.
 int main(void)
 {
-    lcd_init()
-    oi_t *sensor_data = oi_alloc();
-    oi_init(sensor_data);
-    move_forward_safely(sensor_data, 200);
-    oi_free(sensor_data);
+    lcd_init();
+    uart_init();
+    uart_interrupt_init();
+    while(1){
+
+    }
 }
