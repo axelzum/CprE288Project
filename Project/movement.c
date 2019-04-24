@@ -167,21 +167,51 @@ void userMovement(int direction, oi_t *sensor){
 
 }
 */
+//0 = Clean exit
+//1 = Bump
+//2 = left
+//3 = frontleft
+//4 = frontright
+//5 = right
+int * move_forward_safely(oi_t *sensor, int centimeters){
+    int sum = 0;
+    oi_setWheels(200, 200);
+    int bump = 0;
+    int left = 0;
+    int frontleft = 0;
+    int right = 0;
+    int frontright = 0;
+    while( sum < (centimeters*10)){
+        oi_update(sensor);
+        sum += sensor -> distance;
+        //char hello[50];
 
-/**
- *
- *
- */
-void check_for_tape(oi_t *sensor){
-
-    int check_left_value = sensor->cliffFrontLeftSignal;
-    int check_right_value = sensor->cliffFrontRightSignal;
-
-    if(check_left_value> 2000 || check_right_value >2000){
-        move_backward(sensor, 15);
-        uart_sendString("There is tape ahead dont go back");
+        if( sensor -> bumpLeft | sensor -> bumpRight){
+            bump = 1;
+        }
+        if( sensor -> cliffLeft | ((sensor -> cliffLeftSignal > 2700) & (sensor -> cliffLeftSignal < 2800))){
+            left = 1;
+        }
+        if( sensor -> cliffFrontLeft |  ((sensor -> cliffFrontLeftSignal > 2700) & (sensor -> cliffFrontLeftSignal < 2800))){
+            frontleft = 1;
+        }
+        if( sensor -> cliffRight | ((sensor -> cliffRightSignal > 2700) & (sensor -> cliffRightSignal < 2800))){
+            right = 1;
+        }
+        if( sensor -> cliffFrontRight | ((sensor -> cliffFrontRightSignal > 2700) & (sensor -> cliffFrontRightSignal < 2800))){
+            frontright = 1;
+        }
+        if(bump + left + frontleft + right + frontright){
+            break;
+        }
+        //sprintf(hello, "B:%d L:%d FL:%d R:%d FR:%d", bump, left, frontleft, right, frontright);
+        //lcd_printf(hello);
     }
+    oi_setWheels(0,0);
+    int arr[] = {bump, left, frontleft, frontright, right};
+    return arr;
 }
+
 
 /**
  * Drives forward two meters, detecting for any bumps and driving around that.

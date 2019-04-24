@@ -21,6 +21,8 @@ void turn_right(oi_t *sensor, double degrees);
 
 void turn_left(oi_t *sensor, double degrees);
 
+int * move_forward_safely(oi_t *sensor, int centimeters);
+
 void collision(oi_t *sensor);
 
 void userMovement(int direction,oi_t *sensor);

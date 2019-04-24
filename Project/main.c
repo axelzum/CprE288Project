@@ -25,16 +25,9 @@
 int main(void)
 {
     lcd_init();
-    oi_t *dataCheck = oi_alloc();
-    oi_init(dataCheck);
-
-    servo_init();
     uart_init();
-    adc_init();
-    ping_init();
-
+    uart_interrupt_init();
     while(1){
-        check_for_tape(dataCheck);
+
     }
-	return 0;
 }
