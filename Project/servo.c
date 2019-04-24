@@ -50,7 +50,7 @@ void servo_init(void) {
 
     //Init to 0 degrees
     TIMER1_TBPMR_R = 0x0004; //use prescaler extension to 24 bits
-    TIMER1_TBMATCHR_R = 0xC2C0; //load match value
+    TIMER1_TBMATCHR_R = 0xC0C0; //load match value
 
     TIMER1_CTL_R &= 0x0D00;
     TIMER1_CTL_R |= 0x0D00; //enable //0b0000110100000000 //both edges, enable timer
@@ -73,7 +73,7 @@ int servo_move(float degrees) {
         servo_position -= degrees;
     }
 
-    int match = (-160)*servo_position + 312000;
+    int match = (-149)*servo_position + 311467;
     int match_r = match & 0xFFFF;
     int match_prescale = match >> 16;
 
@@ -81,23 +81,23 @@ int servo_move(float degrees) {
         //move to 180 degrees'
 
         TIMER1_TBPMR_R = 0x0004;
-        TIMER1_TBMATCHR_R = 0x5240; // (.002*16000000) *2
+        TIMER1_TBMATCHR_R = 0x5840; // (.002*16000000) *2
         return 180;
     }
     else if (degrees == 0) {
         TIMER1_TBPMR_R = 0x0004;
-        TIMER1_TBMATCHR_R =  0xC2C0; // (.001*16000000) /2
+        TIMER1_TBMATCHR_R =  0xC0C0; // (.001*16000000) /2
         return 0;
     }
     else {
         if(servo_position >= 180){
             TIMER1_TBPMR_R = 0x0004;
-            TIMER1_TBMATCHR_R = 0x5240;
+            TIMER1_TBMATCHR_R = 0x5840;
             return 180;
         }
         if(servo_position <= 0){
             TIMER1_TBPMR_R = 0x0004;
-            TIMER1_TBMATCHR_R =  0xC2C0;
+            TIMER1_TBMATCHR_R =  0xC0C0;
             return 0;
         }
         //move degrees

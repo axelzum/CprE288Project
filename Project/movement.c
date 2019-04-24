@@ -117,6 +117,7 @@ void turn_left(oi_t *sensor, double degrees) {
     return;
 }
 
+/*
 void userMovement(int direction, oi_t *sensor){
     int openAngle = 0;
 
@@ -165,6 +166,8 @@ void userMovement(int direction, oi_t *sensor){
     }
 
 }
+*/
+
 /**
  *
  *

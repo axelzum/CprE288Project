@@ -21,7 +21,7 @@
  *
  */
 
-//TODO before demo calibrate servo, ir sensor.
+//Calibrated to Bot 1
 int main(void)
 {
     lcd_init();
