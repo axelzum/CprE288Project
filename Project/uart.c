@@ -13,9 +13,12 @@
 #include "driverlib/interrupt.h"
 #include "uart.h"
 #include "movement.h"
+#include "analysis.h"
 #include "open_interface.h"
 #include <stdlib.h>
 #include <stdio.h>
+
+//volatile struct reading reading_array[180];
 
 char arr[21]; //Used to hold current string
 int count = 0;  //Current index in char arr
@@ -52,6 +55,7 @@ void uart_init(){
     //Enable it again
     UART1_CTL_R |= 0x1;
 }
+
 
 /**
 * Sends char data to Putty
@@ -98,8 +102,8 @@ void uart_sendString(char *str){
         uart_sendChar(*str);
         str++;
     }
-    uart_sendChar('\r');
-    uart_sendChar('\n');
+//    uart_sendChar('\r');
+//    uart_sendChar('\n');
 }
 
 /**
@@ -124,18 +128,30 @@ void moveWithWords(char *word){
         char toPrint[30];
         sprintf(toPrint, "B:%d L:%d FL:%d FR:%d R:%d", arr2[0], arr2[1], arr2[2], arr2[4], arr2[5]);
         uart_sendString(toPrint);
+        uart_sendChar('\r');
+        uart_sendChar('\n');
     }
     else if(first == 'b' ){
         move_backward(sensor_data,  result);
         uart_sendString("Backward");
+        uart_sendChar('\r');
+        uart_sendChar('\n');
     }
     else if(first == 'r' ){
         turn_right(sensor_data,  result);
         uart_sendString("Right");
+        uart_sendChar('\r');
+        uart_sendChar('\n');
     }
     else if(first == 'l' ){
         turn_left(sensor_data,  result);
         uart_sendString("Left");
+        uart_sendChar('\r');
+        uart_sendChar('\n');
+    }
+    else if(first == 's') {
+        struct reading reading_array[180];
+        take_reading(reading_array);
     }
 
 }
@@ -187,4 +203,5 @@ void uart_interrupt_init(){
 
         // Bind the interrupt to the handler.
         IntRegister(INT_UART1, uart_handler);
+        IntMasterEnable(); //Globally allows CPU to service interrupts
 }

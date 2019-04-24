@@ -7,14 +7,17 @@
  * @date 4/4/2019
  */
 
-#include "analysis.h"
-#include "ping.h"
-#include "adc.h"
+#include "lcd.h"
 #include "timer.h"
 #include "servo.h"
-#include "lcd.h"
+#include "button.h"
+#include "adc.h"
 #include "uart.h"
+#include "ping.h"
+#include "analysis.h"
 #include <math.h>
+
+
 
 
 /**
@@ -96,7 +99,7 @@ int detect_objects(struct reading *reading_array, struct object *object_array) {
  * @date 4/4/19
  *
  */
-int find_smallest(struct reading *reading_array, struct object *object_array, int num_objects) {
+void find_smallest(struct reading *reading_array, struct object *object_array, int num_objects) {
     int index;
     int smallest_index = 0;
     double smallest_width = 500;
@@ -120,6 +123,32 @@ int find_smallest(struct reading *reading_array, struct object *object_array, in
 
         double width = tan((radial_size * 3.1415) / (2 * 180)) * 2 * average_distance;
 
+        //Send all objects to UART
+        char objects[20];
+
+        sprintf(objects, "Index: %d", index);
+        uart_sendString(objects);
+        uart_sendChar('\t');
+        sprintf(objects, "Start: %d", object_array[index].degree_start);
+        uart_sendString(objects);
+        uart_sendChar('\t');
+        sprintf(objects, "Stop: %d", object_array[index].degree_stop);
+        uart_sendString(objects);
+        uart_sendChar('\t');
+        sprintf(objects, "Loc: %d", (object_array[index].degree_stop - object_array[index].degree_start) / 2);
+        uart_sendString(objects);
+        uart_sendChar('\t');
+        sprintf(objects, "Dist: %f", average_distance);
+        uart_sendString(objects);
+        uart_sendChar('\t');
+        sprintf(objects, "Width: %f", width);
+        uart_sendString(objects);
+        uart_sendChar('\t');
+        uart_sendChar('\r');
+        uart_sendChar('\n');
+
+
+
         if (width < smallest_width) {
             smallest_index = index;
             smallest_width = width;
@@ -127,14 +156,19 @@ int find_smallest(struct reading *reading_array, struct object *object_array, in
             smallest_average_distance = average_distance;
         }
 
-    }
 
-    lcd_printf("Index:%d\nDist:%.3f\nLoc:%d\nWidth:%.3f", smallest_index+1, smallest_average_distance, smallest_location, smallest_width);
+
+    }
+    char objects[20];
+    sprintf(objects, "Smallest Index: %d", smallest_index);
+    uart_sendString(objects);
+    uart_sendChar('\r');
+    uart_sendChar('\n');
+
+    //    lcd_printf("Index:%d\nDist:%.3f\nLoc:%d\nWidth:%.3f", smallest_index+1, smallest_average_distance, smallest_location, smallest_width);
 
     servo_position = servo_move(0);
     servo_position = servo_move(smallest_location);
-
-    return smallest_location;
 
 }
 /**
@@ -149,7 +183,7 @@ int find_smallest(struct reading *reading_array, struct object *object_array, in
  * @author Axel Zumwalt, Allan Juarez
  * @date 04/22/2019
  */
-int find_gap(struct reading *reading_array, struct object *object_array, int num_objects){
+/*int find_gap(struct reading *reading_array, struct object *object_array, int num_objects){
 
     //If the goal has been found.
     if (find_smallest(reading_array, object_array, num_objects)) {
@@ -182,7 +216,7 @@ int find_gap(struct reading *reading_array, struct object *object_array, int num
         for (i =object_array[i].degree_stop; i < object_array[i].degree_stop; i++) {
             average_distance += reading_array[i].sonar_distance;
         }
-        width = tan((radial_size * 3.1415) / (2 * 180)) * 2 * average_distance /2;
+        width = tan((radial_size * 3.1415) / (2 * 180)) * 2 * average_distance;
 
         if(width> robot_gap ){
 
@@ -202,7 +236,7 @@ int find_gap(struct reading *reading_array, struct object *object_array, int num
     servo_position = servo_move(biggest_gap_location);
 
     return biggest_gap_location;
-}
+}*/
 
 /**
  * Performs a scan and saves the data in reading_array
@@ -224,19 +258,24 @@ void take_reading(struct reading *reading_array) {
 
     int reading_index = 0;
 
+    //init servo to 0 degrees
+    servo_position = servo_move(0);
+
     while (servo_position < 180) {
 
         //IR
         ir_average = 0;
         for (i = 0; i < 5; i++) {
             adc_read(&ir_raw);
-            ir_average += ir_raw;
+            ir_distance = 22475*(pow(ir_raw, -.905));
+            ir_average += ir_distance;
         }
-        ir_distance = 22475*(pow(ir_average, -.905));
+
         ir_average /= 5;
 
-//        char ir_char[20];
-//        sprintf(ir_char, "%f", ir_average);
+
+                char ir_char[20];
+                sprintf(ir_char, "%f", ir_average);
 
 
         //PING)))
@@ -254,23 +293,25 @@ void take_reading(struct reading *reading_array) {
         }
         ping_average /= 5;
 
-//        char ping_char[20];
-//        sprintf(ping_char, "%f", ping_average);
+
+
+                char ping_char[20];
+                sprintf(ping_char, "%f", ping_average);
 
 
         //Degrees
-//        char degrees[5];
-//        sprintf(degrees, "%d", servo_position);
+                char degrees[5];
+                sprintf(degrees, "%d", servo_position);
 
 
-//        //Print to UART
-//        uart_sendString(degrees);
-//        uart_sendChar('\t');
-//        uart_sendString(ir_char);
-//        uart_sendChar('\t');
-//        uart_sendString(ping_char);
-//        uart_sendChar('\r');
-//        uart_sendChar('\n');
+                //Print to UART
+                uart_sendString(degrees);
+                uart_sendChar('\t');
+                uart_sendString(ir_char);
+                uart_sendChar('\t');
+                uart_sendString(ping_char);
+                uart_sendChar('\r');
+                uart_sendChar('\n');
 
         reading_array[reading_index].degrees = servo_position;
         reading_array[reading_index].ir_distance = ir_average;
@@ -281,26 +322,12 @@ void take_reading(struct reading *reading_array) {
         servo_position = servo_move(1);
     }
 
-//    struct object object_array[10];
-//    int num_objects = detect_objects(reading_array, object_array);
+    struct object object_array[10];
+    int num_objects = detect_objects(reading_array, object_array);
 
-//    //Send all objects to UART
-//    for (i = 0; i < num_objects; i++) {
-//        char objects[20];
-//        sprintf(objects, "%d", object_array[i].degree_start);
-//        uart_sendString(objects);
-//        uart_sendChar('\t');
-//        sprintf(objects, "%d", object_array[i].degree_stop);
-//        uart_sendString(objects);
-//        uart_sendChar('\r');
-//        uart_sendChar('\n');
-//
-//    }
+    find_smallest(reading_array, object_array, num_objects);
 
-//    find_smallest(reading_array, object_array, num_objects);
-
-    return 0;
-}
+    return;
 }
 
 

@@ -27,6 +27,15 @@ int main(void)
     lcd_init();
     uart_init();
     uart_interrupt_init();
+
+    servo_init();
+    adc_init();
+    ping_init();
+    double ping_average;
+
+    int i;
+
+
     while(1){
 
     }

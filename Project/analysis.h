@@ -33,6 +33,6 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
 
 int find_gap(struct reading *reading_array, struct object *object_array);
 
-void take_reading(struct reading *reading_array, struct object *object_array, int num_objects);
+void take_reading(struct reading *reading_array);
 
 #endif /* ANALYSIS_H_ */
