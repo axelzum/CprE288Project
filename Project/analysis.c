@@ -91,7 +91,7 @@ int detect_objects(struct reading *reading_array, struct object *object_array) {
  *   num_objects: the size of object_array
  *
  * @return
- *   Returns a 0 if the smallest object was greater than 3in. Returns a 1 if the smallest object is smaller or a goal marker
+ *   The smallest object location, so the robot can turn towards it.
  *
  * @date 4/4/19
  *
@@ -118,7 +118,7 @@ int find_smallest(struct reading *reading_array, struct object *object_array, in
         }
         average_distance /= radial_size;
 
-        double width = tan((radial_size * 3.1415) / (2 * 180)) * 2 * average_distance /2;
+        double width = tan((radial_size * 3.1415) / (2 * 180)) * 2 * average_distance;
 
         if (width < smallest_width) {
             smallest_index = index;
@@ -134,18 +134,17 @@ int find_smallest(struct reading *reading_array, struct object *object_array, in
     servo_position = servo_move(0);
     servo_position = servo_move(smallest_location);
 
-    if (smallest_width < 4) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
+    return smallest_location;
+
 }
 /**
  * Calculates the biggest size of the gap
  *  @param
  *   reading_array: Data array to pull distance from
  *   object_array: Array of objects to analyze
+ *
+ *   @return
+ *      location of the largest gap
  *
  * @author Axel Zumwalt, Allan Juarez
  * @date 04/22/2019
@@ -167,7 +166,7 @@ int find_gap(struct reading *reading_array, struct object *object_array, int num
     for (i =0; i < object_array[0].degree_start; i++) {
         average_distance += reading_array[i].sonar_distance;
     }
-    double width = tan((radial_size * 3.1415) / (2 * 180)) * 2 * average_distance /2;
+    double width = tan((radial_size * 3.1415) / (2 * 180)) * 2 * average_distance;
     if(width > robot_gap){
 
         biggest_gap = width;
@@ -202,7 +201,6 @@ int find_gap(struct reading *reading_array, struct object *object_array, int num
     servo_position = servo_move(0);
     servo_position = servo_move(biggest_gap_location);
 
-    //TODO if no gap return -1
     return biggest_gap_location;
 }
 
@@ -232,10 +230,9 @@ void take_reading(struct reading *reading_array) {
         ir_average = 0;
         for (i = 0; i < 5; i++) {
             adc_read(&ir_raw);
-            ir_distance = 81189*(pow(ir_raw, -1.132)); //TODO calibrate
-
-            ir_average += ir_distance;
+            ir_average += ir_raw;
         }
+        ir_distance = 22475*(pow(ir_average, -.905));
         ir_average /= 5;
 
 //        char ir_char[20];
