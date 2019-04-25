@@ -15,6 +15,7 @@ C_SRCS += \
 ../lcd.c \
 ../main.c \
 ../movement.c \
+../music.c \
 ../open_interface.c \
 ../ping.c \
 ../servo.c \
@@ -29,6 +30,7 @@ C_DEPS += \
 ./lcd.d \
 ./main.d \
 ./movement.d \
+./music.d \
 ./open_interface.d \
 ./ping.d \
 ./servo.d \
@@ -43,6 +45,7 @@ OBJS += \
 ./lcd.obj \
 ./main.obj \
 ./movement.obj \
+./music.obj \
 ./open_interface.obj \
 ./ping.obj \
 ./servo.obj \
@@ -57,6 +60,7 @@ OBJS__QUOTED += \
 "lcd.obj" \
 "main.obj" \
 "movement.obj" \
+"music.obj" \
 "open_interface.obj" \
 "ping.obj" \
 "servo.obj" \
@@ -71,6 +75,7 @@ C_DEPS__QUOTED += \
 "lcd.d" \
 "main.d" \
 "movement.d" \
+"music.d" \
 "open_interface.d" \
 "ping.d" \
 "servo.d" \
@@ -85,6 +90,7 @@ C_SRCS__QUOTED += \
 "../lcd.c" \
 "../main.c" \
 "../movement.c" \
+"../music.c" \
 "../open_interface.c" \
 "../ping.c" \
 "../servo.c" \

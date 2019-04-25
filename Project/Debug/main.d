@@ -30,6 +30,7 @@ main.obj: ../adc.h
 main.obj: ../uart.h
 main.obj: ../ping.h
 main.obj: ../analysis.h
+main.obj: ../music.h
 
 ../main.c: 
 ../timer.h: 
@@ -61,3 +62,4 @@ C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h:
 ../uart.h: 
 ../ping.h: 
 ../analysis.h: 
+../music.h: 
