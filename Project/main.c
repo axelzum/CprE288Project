@@ -69,10 +69,10 @@ int main(void)
 
                //Movement control with WASD (num)
                if(strcmp(command, "w") == 0){
-                   int arr2[6];
+                   int arr2[7];
                    move_forward_safely(sensor_data, parameter, arr2);
-                   char toPrint[30];
-                   sprintf(toPrint, "BL:%d BR:%d L:%d FL:%d FR:%d R:%d", arr2[0], arr2[1], arr2[2], arr2[3], arr2[4], arr2[5]);
+                   char toPrint[50];
+                   sprintf(toPrint, "BL:%d BR:%d L:%d FL:%d FR:%d R:%d Read:%d", arr2[0], arr2[1], arr2[2], arr2[3], arr2[4], arr2[5], arr2[6]);
                    uart_sendString(toPrint);
                    uart_sendChar('\r');
                    uart_sendChar('\n');
@@ -92,6 +92,13 @@ int main(void)
                else if(strcmp(command, "a") == 0){
                    turn_left(sensor_data,  parameter);
                    uart_sendString("Left");
+                   uart_sendChar('\r');
+                   uart_sendChar('\n');
+               }
+
+               else if(strcmp(command, "t") == 0) {
+                   turn_to(sensor_data, parameter);
+                   uart_sendString("Turn");
                    uart_sendChar('\r');
                    uart_sendChar('\n');
                }

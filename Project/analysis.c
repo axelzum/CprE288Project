@@ -112,7 +112,7 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
         double average_distance = 0;
         int radial_size = (object_array[index].degree_stop - object_array[index].degree_start);
         //If the object is really small its probably not real
-        if (radial_size < 10) {
+        if (radial_size < 5) {
             continue;
         }
 
@@ -126,7 +126,7 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
         //Send all objects to UART
         char objects[20];
 
-        sprintf(objects, "Index: %d", index);
+        sprintf(objects, "Index: %d", index+1);
         uart_sendString(objects);
         uart_sendChar('\t');
         sprintf(objects, "Start: %d", object_array[index].degree_start);
@@ -135,7 +135,7 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
         sprintf(objects, "Stop: %d", object_array[index].degree_stop);
         uart_sendString(objects);
         uart_sendChar('\t');
-        sprintf(objects, "Loc: %d", (object_array[index].degree_stop - object_array[index].degree_start) / 2);
+        sprintf(objects, "Loc: %d", (object_array[index].degree_stop + object_array[index].degree_start) / 2);
         uart_sendString(objects);
         uart_sendChar('\t');
         sprintf(objects, "Dist: %f", average_distance);
@@ -160,7 +160,7 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
 
     }
     char objects[20];
-    sprintf(objects, "Smallest Index: %d", smallest_index);
+    sprintf(objects, "Smallest Index: %d", smallest_index+1);
     uart_sendString(objects);
     uart_sendChar('\r');
     uart_sendChar('\n');
@@ -183,7 +183,8 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
  * @author Axel Zumwalt, Allan Juarez
  * @date 04/22/2019
  */
-/*int find_gap(struct reading *reading_array, struct object *object_array, int num_objects){
+/*
+int find_gap(struct reading *reading_array, struct object *object_array, int num_objects){
 
     //If the goal has been found.
     if (find_smallest(reading_array, object_array, num_objects)) {
@@ -236,7 +237,8 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
     servo_position = servo_move(biggest_gap_location);
 
     return biggest_gap_location;
-}*/
+}
+*/
 
 /**
  * Performs a scan and saves the data in reading_array
@@ -263,19 +265,19 @@ void take_reading(struct reading *reading_array) {
 
     while (servo_position < 180) {
 
-        //IR
+//        //IR
         ir_average = 0;
-        for (i = 0; i < 5; i++) {
-            adc_read(&ir_raw);
-            ir_distance = 22475*(pow(ir_raw, -.905));
-            ir_average += ir_distance;
-        }
+//        for (i = 0; i < 5; i++) {
+//            adc_read(&ir_raw);
+//            ir_distance = 22475*(pow(ir_raw, -.905));
+//            ir_average += ir_distance;
+//        }
+//
+//        ir_average /= 5;
 
-        ir_average /= 5;
 
-
-                char ir_char[20];
-                sprintf(ir_char, "%f", ir_average);
+//                char ir_char[20];
+//                sprintf(ir_char, "%f", ir_average);
 
 
         //PING)))
@@ -295,23 +297,30 @@ void take_reading(struct reading *reading_array) {
 
 
 
-                char ping_char[20];
-                sprintf(ping_char, "%f", ping_average);
-
-
-        //Degrees
-                char degrees[5];
-                sprintf(degrees, "%d", servo_position);
-
-
-                //Print to UART
-                uart_sendString(degrees);
-                uart_sendChar('\t');
-                uart_sendString(ir_char);
-                uart_sendChar('\t');
-                uart_sendString(ping_char);
-                uart_sendChar('\r');
-                uart_sendChar('\n');
+//                char ping_char[20];
+//                sprintf(ping_char, "%f", ping_average);
+//
+//
+//        //Degrees
+//                char degrees[5];
+//                sprintf(degrees, "%d", servo_position);
+//
+//
+//                //Print to UART
+//                uart_sendString(degrees);
+//                uart_sendChar('\t');
+//                uart_sendString(ir_char);
+//                uart_sendChar('\t');
+//                uart_sendString(ping_char);
+//                uart_sendChar('\r');
+//                uart_sendChar('\n');
+        if (servo_position % 10 == 0) {
+            char string[30];
+            sprintf(string, "Progress: %d/180", servo_position);
+            uart_sendString(string);
+            uart_sendChar('\n');
+            uart_sendChar('\r');
+        }
 
         reading_array[reading_index].degrees = servo_position;
         reading_array[reading_index].ir_distance = ir_average;

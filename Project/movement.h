@@ -21,6 +21,8 @@ void turn_right(oi_t *sensor, double degrees);
 
 void turn_left(oi_t *sensor, double degrees);
 
+void turn_to(oi_t *sensor, int degree);
+
 void move_forward_safely(oi_t *sensor, int centimeters, int *output);
 
 void collision(oi_t *sensor);

@@ -117,6 +117,15 @@ void turn_left(oi_t *sensor, double degrees) {
     return;
 }
 
+void turn_to(oi_t *sensor, int degree) {
+    if (degree > 90) { //turn left
+        turn_left(sensor, degree - 90);
+    }
+    else if (degree < 90) { //turn right
+        turn_right(sensor, 90 - degree);
+    }
+}
+
 /*
 void userMovement(int direction, oi_t *sensor){
     int openAngle = 0;
@@ -212,7 +221,14 @@ void move_forward_safely(oi_t *sensor, int centimeters, int *output){
         //sprintf(hello, "B:%d L:%d FL:%d R:%d FR:%d", bump, left, frontleft, right, frontright);
         //lcd_printf(hello);
     }
+
+
     oi_setWheels(0,0);
+
+    char sum_char[20];
+    sprintf(sum_char, "Distance Traveled: %dcm\r\n", sum/10);
+    uart_sendString(sum_char);
+
     output[0] = sensor -> bumpLeft;
     output[1] = sensor -> bumpRight;
     output[2] = left;
