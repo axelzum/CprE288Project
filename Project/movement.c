@@ -180,6 +180,7 @@ void move_forward_safely(oi_t *sensor, int centimeters, int *output){
     int frontleft = 0;
     int right = 0;
     int frontright = 0;
+    int reading = 0;
     while( sum < (centimeters*10)){
         oi_update(sensor);
         sum += sensor -> distance;
@@ -190,15 +191,19 @@ void move_forward_safely(oi_t *sensor, int centimeters, int *output){
         }
         if( sensor -> cliffLeft | ((sensor -> cliffLeftSignal > 2700) & (sensor -> cliffLeftSignal < 2800))){
             left = 1;
+            if(sensor -> cliffLeftSignal != 0){ reading = sensor -> cliffLeftSignal;}
         }
         if( sensor -> cliffFrontLeft |  ((sensor -> cliffFrontLeftSignal > 2700) & (sensor -> cliffFrontLeftSignal < 2800))){
             frontleft = 1;
+            if(sensor -> cliffFrontLeftSignal != 0){ reading = sensor -> cliffFrontLeftSignal;}
         }
         if( sensor -> cliffRight | ((sensor -> cliffRightSignal > 2700) & (sensor -> cliffRightSignal < 2800))){
             right = 1;
+            if(sensor -> cliffRightSignal != 0){ reading = sensor -> cliffRightSignal;}
         }
         if( sensor -> cliffFrontRight | ((sensor -> cliffFrontRightSignal > 2700) & (sensor -> cliffFrontRightSignal < 2800))){
             frontright = 1;
+            if(sensor -> cliffFrontRightSignal != 0){ reading = sensor -> cliffFrontRightSignal;}
         }
         if(bump + left + frontleft + right + frontright){
             break;
@@ -213,6 +218,7 @@ void move_forward_safely(oi_t *sensor, int centimeters, int *output){
     output[3] = frontleft;
     output[4] = frontright;
     output[5] = right;
+    output[6] = reading;
 }
 
 
