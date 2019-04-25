@@ -127,10 +127,10 @@ void moveWithWords(char *word){
     int result = atoi(num);
 
     if(first == 'f' & second == ' '){
-        int arr2[6];
+        int arr2[7];
         move_forward_safely(sensor_data,  result, arr2);
-        char toPrint[30];
-        sprintf(toPrint, "BL:%d BR:%d L:%d FL:%d FR:%d R:%d", arr2[0], arr2[1], arr2[2], arr2[3], arr2[4], arr2[5]);
+        char toPrint[50];
+        sprintf(toPrint, "BL:%d BR:%d L:%d FL:%d FR:%d R:%d Read:%d", arr2[0], arr2[1], arr2[2], arr2[3], arr2[4], arr2[5], arr2[6]);
         uart_sendString(toPrint);
         uart_sendChar('\r');
         uart_sendChar('\n');
