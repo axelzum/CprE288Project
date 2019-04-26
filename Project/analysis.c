@@ -42,24 +42,24 @@ int detect_objects(struct reading *reading_array, struct object *object_array) {
     for (i = 0; i < 175; i++) {
 
         //Take a running average of the distance
-        double ping_average = 0;
+        double ir_average = 0;
         int j;
         for (j = i; j < (i + 5); j++) {
-            ping_average += reading_array[j].sonar_distance;
+            ir_average += reading_array[j].ir_distance;
         }
-        ping_average /= 5;
+        ir_average /= 5;
 
         //Start Object detection if, no current object and distance is less than 70
-        if (ping_average < 70 && object_detected == 0) {
+        if (ir_average < 50 && object_detected == 0) {
 
             object_detected = 1;
-            object_array[object_array_index].degree_start = reading_array[i+5].degrees;
+            object_array[object_array_index].degree_start = reading_array[i].degrees;
             //object_array[object_array_index].ir_start = reading_array[i].ir_distance;
             //object_array[object_array_index].sonar_start = reading_array[i].sonar_distance;
 
         }
         //End objects if distance is greater than 70.
-        else if (ping_average > 70 && object_detected == 1) {
+        else if (ir_average > 50 && object_detected == 1) {
 
             //end object
             object_detected = 0;
@@ -105,6 +105,7 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
     double smallest_width = 500;
     int smallest_location;
     double smallest_average_distance;
+    char objects[20];
 
     //Test size of each object in array
     for(index = 0; index < num_objects; index++) {
@@ -112,7 +113,14 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
         double average_distance = 0;
         int radial_size = (object_array[index].degree_stop - object_array[index].degree_start);
         //If the object is really small its probably not real
-        if (radial_size < 5) {
+        if (radial_size < 2) {
+            sprintf(objects, "Index: %d", index+1);
+            uart_sendString(objects);
+            uart_sendChar('\t');
+            uart_sendString("False Object");
+            uart_sendChar('\t');
+            uart_sendChar('\r');
+            uart_sendChar('\n');
             continue;
         }
 
@@ -124,11 +132,6 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
         double width = tan((radial_size * 3.1415) / (2 * 180)) * 2 * average_distance;
 
         //Send all objects to UART
-        char objects[20];
-
-        sprintf(objects, "Index: %d", index+1);
-        uart_sendString(objects);
-        uart_sendChar('\t');
         sprintf(objects, "Start: %d", object_array[index].degree_start);
         uart_sendString(objects);
         uart_sendChar('\t');
@@ -159,7 +162,7 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
 
 
     }
-    char objects[20];
+
     sprintf(objects, "Smallest Index: %d", smallest_index+1);
     uart_sendString(objects);
     uart_sendChar('\r');
@@ -238,7 +241,7 @@ int find_gap(struct reading *reading_array, struct object *object_array, int num
 
     return biggest_gap_location;
 }
-*/
+ */
 
 /**
  * Performs a scan and saves the data in reading_array
@@ -265,19 +268,19 @@ void take_reading(struct reading *reading_array) {
 
     while (servo_position < 180) {
 
-//        //IR
+        //        //IR
         ir_average = 0;
-//        for (i = 0; i < 5; i++) {
-//            adc_read(&ir_raw);
-//            ir_distance = 22475*(pow(ir_raw, -.905));
-//            ir_average += ir_distance;
-//        }
-//
-//        ir_average /= 5;
+        for (i = 0; i < 10; i++) {
+            adc_read(&ir_raw);
+            ir_distance = 22475*(pow(ir_raw, -.905));
+            ir_average += ir_distance;
+        }
+
+        ir_average /= 10;
 
 
-//                char ir_char[20];
-//                sprintf(ir_char, "%f", ir_average);
+        //                char ir_char[20];
+        //                sprintf(ir_char, "%f", ir_average);
 
 
         //PING)))
@@ -297,23 +300,23 @@ void take_reading(struct reading *reading_array) {
 
 
 
-//                char ping_char[20];
-//                sprintf(ping_char, "%f", ping_average);
-//
-//
-//        //Degrees
-//                char degrees[5];
-//                sprintf(degrees, "%d", servo_position);
-//
-//
-//                //Print to UART
-//                uart_sendString(degrees);
-//                uart_sendChar('\t');
-//                uart_sendString(ir_char);
-//                uart_sendChar('\t');
-//                uart_sendString(ping_char);
-//                uart_sendChar('\r');
-//                uart_sendChar('\n');
+        //                char ping_char[20];
+        //                sprintf(ping_char, "%f", ping_average);
+        //
+        //
+        //        //Degrees
+        //                char degrees[5];
+        //                sprintf(degrees, "%d", servo_position);
+        //
+        //
+        //                //Print to UART
+        //                uart_sendString(degrees);
+        //                uart_sendChar('\t');
+        //                uart_sendString(ir_char);
+        //                uart_sendChar('\t');
+        //                uart_sendString(ping_char);
+        //                uart_sendChar('\r');
+        //                uart_sendChar('\n');
         if (servo_position % 10 == 0) {
             char string[30];
             sprintf(string, "Progress: %d/180", servo_position);
