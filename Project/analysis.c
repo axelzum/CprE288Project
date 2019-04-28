@@ -272,7 +272,7 @@ void take_reading(struct reading *reading_array) {
         ir_average = 0;
         for (i = 0; i < 10; i++) {
             adc_read(&ir_raw);
-            ir_distance = 22475*(pow(ir_raw, -.905));
+            ir_distance = 22475*(pow(ir_raw, -.905));//bot1           18393*(pow(ir_raw, -.832)); bot 4
             ir_average += ir_distance;
         }
 

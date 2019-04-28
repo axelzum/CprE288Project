@@ -29,6 +29,7 @@ uart.obj: ../analysis.h
 uart.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.2.LTS/include/stdlib.h
 uart.obj: ../music.h
 uart.obj: ../ping.h
+uart.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h
 
 ../uart.c: 
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.2.LTS/include/stdint.h: 
@@ -59,3 +60,4 @@ C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.2.LTS/include/machine/_limits.h:
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.2.LTS/include/stdlib.h: 
 ../music.h: 
 ../ping.h: 
+C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h: 

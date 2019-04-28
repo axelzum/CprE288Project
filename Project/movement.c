@@ -3,9 +3,10 @@
  *
  * @brief Contains the functions called by main to move the robot.
  *
- * @author Axel Zumwalt, Allan Juarez
+ * @author Axel Zumwalt, Allan Juarez, Adam Ford, Harrison Majerus
  * @date 2/7/2019
  */
+
 #include "uart.h"
 #include "movement.h"
 #include "analysis.h"
@@ -95,7 +96,7 @@ void turn_right(oi_t *sensor, double degrees) {
  * @author Axel Zumwalt, Allan Juarez
  * @param
  *   sensor: struct of type oi_t from open_interface
- *   centimeters: Number of degrees to turn left.
+ *   degrees: Number of degrees to turn left.
  *
  * @date 2/7/19
  *
@@ -117,6 +118,18 @@ void turn_left(oi_t *sensor, double degrees) {
     return;
 }
 
+/**
+ * Turns the robot left the number of degrees specified.
+ *
+ * @author Axel Zumwalt, Allan Juarez
+ * @param
+ *   sensor: struct of type oi_t from open_interface
+ *    degrees: Degree to turn to.
+ *
+ *
+ * @date 2/7/19
+ *
+ */
 void turn_to(oi_t *sensor, int degree) {
     if (degree > 90) { //turn left
         turn_left(sensor, degree - 90);
@@ -176,12 +189,19 @@ void userMovement(int direction, oi_t *sensor){
 
 }
 */
-//0 = Clean exit
-//1 = Bump
-//2 = left
-//3 = frontleft
-//4 = frontright
-//5 = right
+
+/**
+ * Moves the bot forward and stops if it collides with an object, reaches an edge, or arrives at a barrier.
+ *
+ * @author: Adam Ford, Harrison Majerus
+ *
+ * @param
+ *    sensor: struct of type oi_t from open_interface
+ *    centimeters: distance to move
+ *    output: array to hold collision data
+ *
+ * @date: 4/25/19
+ */
 void move_forward_safely(oi_t *sensor, int centimeters, int *output){
     int sum = 0;
     oi_setWheels(200, 200);
@@ -218,8 +238,6 @@ void move_forward_safely(oi_t *sensor, int centimeters, int *output){
         if(bump + left + frontleft + right + frontright){
             break;
         }
-        //sprintf(hello, "B:%d L:%d FL:%d R:%d FR:%d", bump, left, frontleft, right, frontright);
-        //lcd_printf(hello);
     }
 
 
@@ -228,7 +246,12 @@ void move_forward_safely(oi_t *sensor, int centimeters, int *output){
     char sum_char[20];
     sprintf(sum_char, "Distance Traveled: %dcm\r\n", sum/10);
     uart_sendString(sum_char);
-
+    //0 = Clean exit
+    //1 = Bump
+    //2 = left
+    //3 = frontleft
+    //4 = frontright
+    //5 = right
     output[0] = sensor -> bumpLeft;
     output[1] = sensor -> bumpRight;
     output[2] = left;

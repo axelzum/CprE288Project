@@ -26,9 +26,12 @@ main.obj: ../servo.h
 main.obj: C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.2.LTS/include/stdbool.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h
 main.obj: ../button.h
+main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h
 main.obj: ../adc.h
+main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h
 main.obj: ../uart.h
 main.obj: ../ping.h
+main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h
 main.obj: ../analysis.h
 main.obj: ../music.h
 
@@ -58,8 +61,11 @@ C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.2.LTS/include/machine/_limits.h:
 C:/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.2.LTS/include/stdbool.h: 
 C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h: 
 ../button.h: 
+C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h: 
 ../adc.h: 
+C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h: 
 ../uart.h: 
 ../ping.h: 
+C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h: 
 ../analysis.h: 
 ../music.h: 

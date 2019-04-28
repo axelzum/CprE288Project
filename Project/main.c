@@ -1,4 +1,11 @@
-
+/**
+ * @file main.c
+ *
+ * @brief Main file
+ *
+ * @author Axel Zumwalt, Allan Juarez, Adam Ford. Harrison Majerus
+ * @date 2/7/2019
+ */
 #include "timer.h"
 #include "open_interface.h"
 #include "movement.h"
@@ -14,15 +21,15 @@
 /**
  * @file main.c
  *
- * @brief Main for final project
+ * @brief Main for final project. Initializations and bot control.
  *
  * @author Axel Zumwalt, Allan Juarez, Adam Ford, Harrison Majerus
  *
- * @date 4/11/2019
+ * @date 4/27/2019
  *
  */
 
-//Calibrated to Bot 1
+//Calibrated to Bot 4
 int main(void)
 {
     lcd_init();
