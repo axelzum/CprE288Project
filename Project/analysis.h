@@ -23,12 +23,6 @@ struct reading {
 struct object {
     int degree_start;
     int degree_stop;
-    /*
-    float ir_start;
-    float ir_stop;
-    float sonar_start;
-    float sonar_stop;
-    */
 };
 /**
  * Finds and indexs all objects in the dataset
@@ -52,8 +46,6 @@ int detect_objects(struct reading *reading_array, struct object *object_array);
  *   object_array: Array of objects to analyze
  *   num_objects: the size of object_array
  *
- * @return
- *   The smallest object location, so the robot can turn towards it.
  *
  * @date 4/4/19
  *

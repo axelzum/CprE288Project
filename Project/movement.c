@@ -119,7 +119,7 @@ void turn_left(oi_t *sensor, double degrees) {
 }
 
 /**
- * Turns the robot left the number of degrees specified.
+ * Turns the robot to the degree specified
  *
  * @author Axel Zumwalt, Allan Juarez
  * @param
@@ -138,57 +138,6 @@ void turn_to(oi_t *sensor, int degree) {
         turn_right(sensor, 90 - degree);
     }
 }
-
-/*
-void userMovement(int direction, oi_t *sensor){
-    int openAngle = 0;
-
-    if(direction == 0){
-        turn_left(sensor, 45);
-    }
-    if(direction == 1)
-    {
-        turn_right(sensor, 45);
-    }
-    if(direction == 2){
-        turn_left(sensor, 180);
-    }
-
-    struct reading reading_array[180];
-    take_reading(reading_array);
-
-    struct object object_array[10];
-    int num_objects = detect_objects(reading_array, object_array);
-    openAngle = find_gap(reading_array, object_array, num_objects);
-    // no open angles
-    if(openAngle <0){
-        uart_sendString("There were no open angles... turn bot left or right");
-        return;
-    }
-    //when robot finds green
-    else if(openAngle ==500){
-        uart_sendString("Green is found");
-        //greenFunction()
-    }
-    else{
-
-        while(openAngle < 85 || openAngle >95){
-            if(openAngle < 90){
-                uart_sendString("Bot is turning Right");
-                turn_right(sensor, 90 - openAngle);
-                userMovement(3, sensor);
-            }
-            else if(openAngle > 90){
-                uart_sendString("Bot is turning Left");
-                turn_left(sensor, openAngle - 90);
-                userMovement(3, sensor);
-            }
-        }
-        return;
-    }
-
-}
-*/
 
 /**
  * Moves the bot forward and stops if it collides with an object, reaches an edge, or arrives at a barrier.
@@ -216,6 +165,7 @@ void move_forward_safely(oi_t *sensor, int centimeters, int *output){
         sum += sensor -> distance;
         //char hello[50];
 
+        //Conditions to check for bumps, edge, or cliff
         if( sensor -> bumpLeft | sensor -> bumpRight){
             bump = 1;
         }
@@ -259,48 +209,4 @@ void move_forward_safely(oi_t *sensor, int centimeters, int *output){
     output[4] = frontright;
     output[5] = right;
     output[6] = reading;
-}
-
-
-/**
- * Drives forward two meters, detecting for any bumps and driving around that.
- *
- * @author Axel Zumwalt, Allan Juarez
- * @param
- *   sensor: struct of type oi_t from open_interface
- *
- * @date 2/7/19
- *
- */
-void collision(oi_t *sensor) {
-    int dist_traveled = 0;
-
-    oi_setWheels(400, 400);
-
-    while (dist_traveled < 2000) {
-        oi_update(sensor);
-        dist_traveled += sensor -> distance;
-
-        //TODO: check if the actions after bump are adding to total distance traveled.
-        if (sensor -> bumpRight == 1) {
-            move_backward(sensor, 15);
-            turn_left(sensor, 90);
-            move_forward(sensor, 25);
-            turn_right(sensor, 90);
-            oi_setWheels(400, 400);
-            //dist_traveled -= sensor -> distance;
-        }
-        else if (sensor -> bumpLeft == 1) {
-            move_backward(sensor, 15);
-            turn_right(sensor, 90);
-            move_forward(sensor, 25);
-            turn_left(sensor, 90);
-            oi_setWheels(400, 400);
-            //dist_traveled -= sensor -> distance;
-        }
-    }
-
-    oi_setWheels(0,0);
-
-    return;
 }

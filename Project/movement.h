@@ -86,17 +86,5 @@ void turn_to(oi_t *sensor, int degree);
  * @date: 4/25/19
  */
 void move_forward_safely(oi_t *sensor, int centimeters, int *output);
-/**
- * Drives forward two meters, detecting for any bumps and driving around that.
- *
- * @author Axel Zumwalt, Allan Juarez
- * @param
- *   sensor: struct of type oi_t from open_interface
- *
- * @date 2/7/19
- *
- */
-void collision(oi_t *sensor);
 
-//void userMovement(int direction,oi_t *sensor);
 #endif /* MOVEMENT_H_ */

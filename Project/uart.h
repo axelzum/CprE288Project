@@ -38,27 +38,5 @@ char uart_receive(void);
 **/
 void uart_sendString(char* str);
 
-/**
-* Moves the Roomba if a specific command has been entered
-* @author Harrison Majerus, Adam Ford
-* @param word Pointer to string of current words
-* @date 2/28/19
-*/
-void moveWithWords(char *word);
-
-/**
-* Handles the UART interrupts
-* @author Harrison Majerus, Adam Ford
-* @date 2/28/19
-*/
-void uart_handler();
-
-/**
-* Initializes the uart interrupts
-* @author Harrison Majerus, Adam Ford
-* @date 2/28/19
-*/
-void uart_interrupt_init();
-
 
 #endif /* UART_H_ */

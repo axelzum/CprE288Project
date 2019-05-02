@@ -7,10 +7,8 @@
  * @date 4/4/2019
  */
 
-#include "lcd.h"
 #include "timer.h"
 #include "servo.h"
-#include "button.h"
 #include "adc.h"
 #include "uart.h"
 #include "ping.h"
@@ -38,7 +36,7 @@ int detect_objects(struct reading *reading_array, struct object *object_array) {
     int object_array_index = 0;
     int object_detected = 0;
 
-    //size_t reading_size = sizeof(reading_array) / sizeof(reading_array[0]);
+    //For each degree in the scan look for an object edge
     for (i = 0; i < 175; i++) {
 
         //Take a running average of the distance
@@ -49,29 +47,25 @@ int detect_objects(struct reading *reading_array, struct object *object_array) {
         }
         ir_average /= 5;
 
-        //Start Object detection if, no current object and distance is less than 70
+        //Start Object detection if, no current object and distance is less than 50
         if (ir_average < 50 && object_detected == 0) {
-
             object_detected = 1;
             object_array[object_array_index].degree_start = reading_array[i].degrees;
-            //object_array[object_array_index].ir_start = reading_array[i].ir_distance;
-            //object_array[object_array_index].sonar_start = reading_array[i].sonar_distance;
-
         }
-        //End objects if distance is greater than 70.
+        //End objects if distance is greater than 50.
         else if (ir_average > 50 && object_detected == 1) {
-
             //end object
             object_detected = 0;
             object_array[object_array_index].degree_stop = reading_array[i].degrees;
-            //object_array[object_array_index].ir_stop = reading_array[i].ir_distance;
-            //object_array[object_array_index].sonar_stop = reading_array[i].sonar_distance;
+
             object_array_index++;
         }
+        //Probably won't happen, but breaks if it detects more than 10 objects
         if (object_array_index > 10) {
             break;
         }
     }
+
     //If the sweep ends on an object, end the object there
     if (object_detected == 1) {
         object_detected = 0;
@@ -93,8 +87,6 @@ int detect_objects(struct reading *reading_array, struct object *object_array) {
  *   object_array: Array of objects to analyze
  *   num_objects: the size of object_array
  *
- * @return
- *   The smallest object location, so the robot can turn towards it.
  *
  * @date 4/4/19
  *
@@ -104,7 +96,6 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
     int smallest_index = 0;
     double smallest_width = 500;
     int smallest_location;
-    double smallest_average_distance;
     char objects[20];
 
     //Test size of each object in array
@@ -124,6 +115,7 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
             continue;
         }
 
+        //Calculate the average distance over the size of the object
         for (i = object_array[index].degree_start; i < object_array[index].degree_stop; i++) {
             average_distance += reading_array[i].sonar_distance;
         }
@@ -151,12 +143,11 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
         uart_sendChar('\n');
 
 
-
+        //Update what object is smallest if a smaller one was found
         if (width < smallest_width) {
             smallest_index = index;
             smallest_width = width;
             smallest_location = (object_array[index].degree_stop + object_array[index].degree_start) / 2;
-            smallest_average_distance = average_distance;
         }
 
 
@@ -168,8 +159,8 @@ void find_smallest(struct reading *reading_array, struct object *object_array, i
     uart_sendChar('\r');
     uart_sendChar('\n');
 
-    //    lcd_printf("Index:%d\nDist:%.3f\nLoc:%d\nWidth:%.3f", smallest_index+1, smallest_average_distance, smallest_location, smallest_width);
 
+    //Point the servo to the smallest object
     servo_position = servo_move(0);
     servo_position = servo_move(smallest_location);
 
@@ -268,22 +259,16 @@ void take_reading(struct reading *reading_array) {
 
     while (servo_position < 180) {
 
-        //        //IR
+        //IR average of 10 samples
         ir_average = 0;
         for (i = 0; i < 10; i++) {
             adc_read(&ir_raw);
-            ir_distance = 22475*(pow(ir_raw, -.905));//bot1           18393*(pow(ir_raw, -.832)); bot 4
+            ir_distance = 22475*(pow(ir_raw, -.905));//bot1
             ir_average += ir_distance;
         }
-
         ir_average /= 10;
 
-
-        //                char ir_char[20];
-        //                sprintf(ir_char, "%f", ir_average);
-
-
-        //PING)))
+        //PING))) average of 5 samples
         ping_average = 0;
         for (i = 0; i < 5; i++) {
             switch_function();
@@ -298,25 +283,7 @@ void take_reading(struct reading *reading_array) {
         }
         ping_average /= 5;
 
-
-
-        //                char ping_char[20];
-        //                sprintf(ping_char, "%f", ping_average);
-        //
-        //
-        //        //Degrees
-        //                char degrees[5];
-        //                sprintf(degrees, "%d", servo_position);
-        //
-        //
-        //                //Print to UART
-        //                uart_sendString(degrees);
-        //                uart_sendChar('\t');
-        //                uart_sendString(ir_char);
-        //                uart_sendChar('\t');
-        //                uart_sendString(ping_char);
-        //                uart_sendChar('\r');
-        //                uart_sendChar('\n');
+        //Prints progress of the scan every 10 degrees
         if (servo_position % 10 == 0) {
             char string[30];
             sprintf(string, "Progress: %d/180", servo_position);
@@ -334,6 +301,7 @@ void take_reading(struct reading *reading_array) {
         servo_position = servo_move(1);
     }
 
+    //Every scan automatically runs the other analysis functions
     struct object object_array[10];
     int num_objects = detect_objects(reading_array, object_array);
 

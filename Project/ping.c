@@ -9,7 +9,6 @@
 
 #include "ping.h"
 #include "timer.h"
-#include "lcd.h"
 #include <math.h>
 
 
@@ -97,7 +96,6 @@ double ping_read(void) {
     }
     pulse_time = (pulse_width *.0625) / 1000;
     distance = (340 * (pulse_time / 1000)) * 100 /2;
-    //lcd_printf("Pulse Width: %d\nPulse Time: %.3fms\nDistance: %.3fcm\nOverflow: %d", pulse_width, pulse_time, distance, overflow_count);
     return distance;
 }
 
